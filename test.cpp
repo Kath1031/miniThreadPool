@@ -20,14 +20,15 @@ public:
 private:
 	int begin_, end_;
 };
+
+//当Result结束生命周期时，理应施放全部资源，但是g++对于condition_variable的析构函数是默认实现，因此出现死锁问题
 int main()
 {
 	{
 		ThreadPool tp;
 
 		tp.setMode(PoolMode::CACHED);
-		tp.start(1);
-		tp.submitTask(std::make_shared<MyTask>());
+		tp.start(2);
 		tp.submitTask(std::make_shared<MyTask>());
 		tp.submitTask(std::make_shared<MyTask>());
 		tp.submitTask(std::make_shared<MyTask>());
@@ -35,13 +36,10 @@ int main()
 		tp.submitTask(std::make_shared<MyTask>());
 		tp.submitTask(std::make_shared<MyTask>());
 
-		Result res = tp.submitTask(std::make_shared<MyTask>(1, 100));
-		tp.submitTask(std::make_shared<MyTask>());
-		tp.submitTask(std::make_shared<MyTask>());
-		tp.submitTask(std::make_shared<MyTask>());
-
+		//std::cout<<res3.get().getData<int>()<<std::endl;
 	}
-	system("pause");
+	std::cout<<"finish"<<std::endl;
+	getchar();
 	//std::this_thread::sleep_for(std::chrono::seconds(10));
 	return 0;
 }

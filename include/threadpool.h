@@ -5,11 +5,13 @@
 #include <vector>
 #include <queue>
 #include <memory>
+#include <thread>
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
 #include <functional>
 #include <unordered_map>
+#include <iostream>
 //threadpool status
 enum class PoolMode {
     FIXED, //fixed thread number
@@ -19,22 +21,32 @@ class Semaphore {
 public:
     Semaphore(int limit = 0)
         :resLimit_(limit)
+        ,isExit_(false)
     {};
-    ~Semaphore() = default;
+    ~Semaphore() {
+        //isExit_=true;
+        std::cout<<"释放资源"<<std::this_thread::get_id()<<std::endl;
+    }
 public:
 
     //获取一个资源的信号量
     void wait()
     {
+            if(isExit_)
+            return ;
         std::unique_lock<std::mutex> lock(mtx_);
         //阻塞，直到有信号量资源
+                std::cout<<"-------wait"<<std::this_thread::get_id()<<std::endl;
         cond_.wait(lock, [&]()->bool {return resLimit_ > 0; });
         --resLimit_;
     }
     //增加一个信号量
     void post()
     {
+        if(isExit_)
+            return ;
         std::unique_lock<std::mutex> lock(mtx_);
+        std::cout<<"---------post"<<std::this_thread::get_id()<<std::endl;
         ++resLimit_;
         cond_.notify_all();
     }
@@ -42,6 +54,7 @@ private:
     int resLimit_;
     std::mutex mtx_;
     std::condition_variable cond_;
+    std::atomic_bool isExit_;
 };
 
 class Any {
