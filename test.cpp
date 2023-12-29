@@ -3,8 +3,6 @@
 #include <chrono>
 using ull = unsigned long long;
 
-//当Result结束生命周期时，理应施放全部资源，但是g++对于condition_variable的析构函数是默认实现，因此出现死锁问题
-
 int sum(int a1,int a2,int a3,int a4){
 	return a1+a2+a3+a4;
 }
